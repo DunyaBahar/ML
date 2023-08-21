@@ -1,0 +1,11 @@
+package helloWorld;
+package System
+
+public class MessagePrinter {
+	
+	public void printText(String textToPrint) {
+		System.out.print("Hello! Your text is ");
+		System.out.println(textToPrint);
+	}
+
+}

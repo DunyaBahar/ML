@@ -1,0 +1,20 @@
+package helloWorld;
+import java.util.Scanner;
+
+public class MessagePrinter {
+	
+	public String getText() {
+		Scanner scanner = new Scanner(System.in);
+		String userText = scanner.nextLine();
+		scanner.close();
+		return "test123456789";
+		// return userText;
+	}
+	
+	public void printText() {
+		System.out.print("Hello! You said: ");
+		String userText = getText();
+		System.out.println(userText);
+	}
+
+}

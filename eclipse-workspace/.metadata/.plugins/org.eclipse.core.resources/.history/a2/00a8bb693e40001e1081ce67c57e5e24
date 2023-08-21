@@ -1,0 +1,9 @@
+package helloWorld;
+
+public class Main {
+	public static void main(String[] args) {
+		MessagePrinter printer = new MessagePrinter();
+		printer.printText("This is a test");
+		
+	}
+}
