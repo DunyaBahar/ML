@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Copy 4 elements to &apos;perceptronLab/src&apos;&#x0D;&#x0A;- Original project: &apos;tutorial&apos;&#x0D;&#x0A;- Destination element: &apos;perceptronLab/src&apos;&#x0D;&#x0A;- Original elements:&#x0D;&#x0A;     DataMatrix.java&#x0D;&#x0A;     MLSystemManager.java&#x0D;&#x0A;     SupervisedLearner.java&#x0D;&#x0A;     BaselineLearner.java" description="Copy compilation units" destination="=perceptronLab/src" element1="/src&lt;{DataMatrix.java" element2="/src&lt;{MLSystemManager.java" element3="/src&lt;{SupervisedLearner.java" element4="/src&lt;{BaselineLearner.java" files="0" flags="589830" folders="0" id="org.eclipse.jdt.ui.copy" policy="org.eclipse.jdt.ui.copyResources" stamp="1693693708121" units="4" version="1.0"/>
+</session>

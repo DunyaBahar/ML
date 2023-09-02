@@ -1,0 +1,33 @@
+package perceptronLab;
+
+import java.lang.Math;
+
+public class Network {
+	double[] inputs = {0, 0, 0, 0, 0, 0, 0, 0};
+	double[] weights = {0, 0, 0, 0, 0, 0, 0, 0};  // connecting the 8 inputs to the 1 neuron
+	boolean output = false;
+
+	public void initWeights() {
+		for (int i = 0; i < 8; i++) {
+			double randNum = 1;  // init to something too high
+			while (randNum > .3) {  // ensure weight is small
+				randNum = Math.random();  // choose a random number between 0 and 1
+			}  // end while
+			
+			this.weights[i] = randNum;  // the weight is small and random
+		}  // end for
+		
+		
+		
+	}
+	
+	public void readInputs() {
+		// use the toolbox given to parse the input. 
+		// maybe familiarize myself more with the given framework to read in inputs?
+		this.inputs[i] = nextInput;
+	}
+	
+	
+}
+
+

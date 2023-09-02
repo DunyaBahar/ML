@@ -1,0 +1,17 @@
+
+public class Perceptron extends SupervisedLearner {
+
+	@Override
+	public void train(DataMatrix featuresOnlyDataMatrix, DataMatrix labelsOnlyDataMatrix) throws Exception {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void predictInstanceLabelsFromFeatures(double[] featureVector, double[] arrayInWhichToPutLabels)
+			throws Exception {
+		// TODO Auto-generated method stub
+
+	}
+
+}

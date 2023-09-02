@@ -1,0 +1,38 @@
+import java.util.List;
+
+public class Perceptron extends SupervisedLearner {
+	double[] predictedLabels;
+
+	@Override
+	public void train(DataMatrix featuresOnlyDataMatrix, DataMatrix labelsOnlyDataMatrix) throws Exception {
+		predictedLabels = new double[ labelsOnlyDataMatrix.getColCount() ] ;
+		// The train part of the perceptron algorithm from pg 47 in the book
+		// Until all the outputs are correct:
+		while (output != target) {
+			// for each input vector *x*:
+			for (int rowIndex = 0; rowIndex < featuresOnlyDataMatrix.getRowCount(); rowIndex++) {
+				double[] inputVector = featuresOnlyDataMatrix.matrixData.get(rowIndex);
+				boolean activate;
+				double net = 0;
+				// for each input in the input vector:
+				for (int colIndex = 0; colIndex < featuresOnlyDataMatrix.getColCount(); colIndex++) {
+					double input = inputVector[colIndex];
+					net += input * weight;
+				}  // end inner for thru input vector
+				final int threshold = 0;
+				activate = true ? net > threshold : false;
+				
+			}  // end outer for thru rows in feature matrix
+
+		}  // end while because now outputs = targets
+
+	}
+
+	@Override
+	public void predictInstanceLabelsFromFeatures(double[] featureVector, double[] arrayInWhichToPutLabels)
+			throws Exception {
+		// TODO Auto-generated method stub
+
+	}
+
+}

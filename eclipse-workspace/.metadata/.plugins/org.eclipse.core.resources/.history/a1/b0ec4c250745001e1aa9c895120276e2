@@ -1,0 +1,7 @@
+package perceptronLab;
+
+public class Network {
+	array[Node] nodes;
+	array[int] inputs;
+
+}

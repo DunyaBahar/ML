@@ -1,0 +1,7 @@
+1693694048821	Delete element
+1693694086496	Delete element
+1693694109576	Delete element
+1693696170359	Encapsulate field 'trainingDataMatrix'
+1693696174937	Encapsulate field 'labelsOnlyDataMatrix'
+1693696838535	Encapsulate field 'predictedLabels'
+1693696843373	Encapsulate field 'weights'
