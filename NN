@@ -8,7 +8,9 @@ public class NeuralNet extends SupervisedLearner {
 	Random random;
 	// topology here
 	double[] inputLayer;
+	double inputBias;
 	double[] hiddenLayer;  // only one needed, could generalize to more.
+	double hiddenBias;
 	double[] outputLayer;
 	
 	int nNodesInputLayer = 0;
@@ -21,6 +23,7 @@ public class NeuralNet extends SupervisedLearner {
 	
 	final double LEARNING_RATE = .01;
 	final double VAL_SPLIT = .2;  // 20% of the training data will be used for a validation set.
+	final int N_HIDDEN_NODES = 2;  // number of nodes in the hidden layer, decided thru experimentation
 
 	// do we assume a classification task? 
 	// make it work for regression...?
@@ -47,44 +50,34 @@ public class NeuralNet extends SupervisedLearner {
 		DataMatrix yVal = new DataMatrix(featuresOnlyDataMatrix, nTrainRows, nFeatures, nTrainValRows - nTrainRows, 1);
 		
 		initTopology(featuresOnlyDataMatrix, labelsOnlyDataMatrix);
-
+		
+		// initialize weights and biases:
+		inputLayer = initWeights(nNodesInputLayer);
+		inputBias = initWeights(1)[0];
+		hiddenLayer = initWeights(nNodesHiddenLayer);
+		hiddenBias = initWeights(1)[0];
+		inputLayer = initWeights(nNodesInputLayer);
 	}
 
 	private void initTopology(DataMatrix x, DataMatrix y) {
 		int nPossibleVals;
 		for (int col = 0; col < x.getColCount(); col++) {
-			nPossibleVals = y.getValueCountForAttributeAtColumn(col);
+			nPossibleVals = x.getValueCountForAttributeAtColumn(col);
 			nNodesInputLayer += (nPossibleVals == 0) ? 1 : nPossibleVals;      
-			
 		}
-		
-		nNodesOutputLayer = 42;
-		
-		// for each (i) continuous feature, add 1 node:
-		
-		//for each (j )categorical feature, add k nodes
-			// (where k is the num of possible values for the feature)
-				// we've determined how many nodes we have in the input layer.
-				// play around w num nodes in hidden layer - see project spec
-				// in output layer, same thing - 
-
-		
-		nNodesHiddenLayer = 0;
-		// for each continuous feature +1 node:
-			// for each categorical feature + k nodes:
-		
-		nNodesOutputLayer = 0;
-		// for each continuous feature +1 node:
-			// for each categorical feature + k nodes:
-
-		
-		// how to know how many features we have,
-		// and wheather they are cat / cont,
-		// and how many possible values that feature can take on
-		// (how many output nodes are needed)
+		nPossibleVals = y.getValueCountForAttributeAtColumn(0);
+		nNodesOutputLayer += (nPossibleVals == 0) ? 1 : nPossibleVals;      
 		// i.e iris - 1 output feature, 1 hot vector w 3 output nodes (100 for example for 1st class.)
 		// but will put 0 1 or 2 in the arrayInWhichToPutLabels...
 		// need the 1hot format to 
+	}
+	
+	private double[] initWeights(int nInputs) {
+	    double[] weights = new double[nInputs];
+	    final double bound = 0.25;  // is this different for backprop?
+	    for (int i = 0; i < weights.length; i++)
+	    	weights[i] = (random.nextDouble() * 2 * bound) - bound;
+	    return weights;
 	}
 
 	// arrayToPutLabels is 1 column. put prediction for one instance at that row. 
@@ -103,5 +96,4 @@ public class NeuralNet extends SupervisedLearner {
 		// TODO Auto-generated method stub
 
 	}
-
 }
