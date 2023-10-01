@@ -1,0 +1,107 @@
+import java.util.Random;
+
+// topology agnostic
+// dont have training set, don't know # features or input nodes
+// dont know what target label or output node is
+// can't set up topology in constructor 
+public class NeuralNet extends SupervisedLearner {
+	Random random;
+	// topology here
+	double[] inputLayer;
+	double[] hiddenLayer;  // only one needed, could generalize to more.
+	double[] outputLayer;
+	
+	int nNodesInputLayer = 0;
+	int nNodesHiddenLayer = 0;
+	int nNodesOutputLayer;
+	
+	int nTrainValRows;  // number of instances in the full training set, before split into train and val sets.
+	int nTrainRows;  // number of instances in the training set, after validation set is removed.
+	int nFeatures;
+	
+	final double LEARNING_RATE = .01;
+	final double VAL_SPLIT = .2;  // 20% of the training data will be used for a validation set.
+
+	// do we assume a classification task? 
+	// make it work for regression...?
+
+	public NeuralNet(Random rand) {
+		this.random = rand;
+	}
+
+	@Override
+	public void train(DataMatrix featuresOnlyDataMatrix, DataMatrix labelsOnlyDataMatrix) throws Exception {
+		// convert labels 2, 3, etc to 001 or 0010 (one hot vector)
+		// use one hot version to calculate the error (100 010 version, per digit.)
+		// reference the "network equations" in backprop slides
+		
+		// separate out train and val sets:
+		featuresOnlyDataMatrix.shuffleRowOrderWithBuddyMatrix(random, labelsOnlyDataMatrix);
+		nTrainValRows = featuresOnlyDataMatrix.getRowCount();
+		nTrainRows = (int)((1- VAL_SPLIT) * nTrainValRows) ;
+		nFeatures = featuresOnlyDataMatrix.getColCount();
+		// DM params: DM otherMatrix, int rowStart, int colStart, int rowCount, int colCount
+		DataMatrix xTrain = new DataMatrix(featuresOnlyDataMatrix, 0, 0, nTrainRows, nFeatures);
+		DataMatrix yTrain = new DataMatrix(featuresOnlyDataMatrix, 0, nFeatures, nTrainRows, 1);
+		DataMatrix xVal = new DataMatrix(featuresOnlyDataMatrix, nTrainRows, 0, nTrainValRows - nTrainRows, nFeatures);
+		DataMatrix yVal = new DataMatrix(featuresOnlyDataMatrix, nTrainRows, nFeatures, nTrainValRows - nTrainRows, 1);
+		
+		initTopology(featuresOnlyDataMatrix, labelsOnlyDataMatrix);
+
+	}
+
+	private void initTopology(DataMatrix x, DataMatrix y) {
+		int nPossibleVals;
+		for (int col = 0; col < x.getColCount(); col++) {
+			nPossibleVals = y.getValueCountForAttributeAtColumn(col);
+			nNodesInputLayer += (nPossibleVals == 0) ? 1 : nPossibleVals;      
+			
+		}
+		
+		nNodesOutputLayer = 42;
+		
+		// for each (i) continuous feature, add 1 node:
+		
+		//for each (j )categorical feature, add k nodes
+			// (where k is the num of possible values for the feature)
+				// we've determined how many nodes we have in the input layer.
+				// play around w num nodes in hidden layer - see project spec
+				// in output layer, same thing - 
+
+		
+		nNodesHiddenLayer = 0;
+		// for each continuous feature +1 node:
+			// for each categorical feature + k nodes:
+		
+		nNodesOutputLayer = 0;
+		// for each continuous feature +1 node:
+			// for each categorical feature + k nodes:
+
+		
+		// how to know how many features we have,
+		// and wheather they are cat / cont,
+		// and how many possible values that feature can take on
+		// (how many output nodes are needed)
+		// i.e iris - 1 output feature, 1 hot vector w 3 output nodes (100 for example for 1st class.)
+		// but will put 0 1 or 2 in the arrayInWhichToPutLabels...
+		// need the 1hot format to 
+	}
+
+	// arrayToPutLabels is 1 column. put prediction for one instance at that row. 
+	// for classification, put in an integer that corresponds to the class
+	// (0, 1, 2 for example)
+	// BUT in model we should have as many output nodes we'd need based on the data
+	// then we'd interpret / translate that (which has the highest net, for example
+	// the translated version 001 would go into arrayToPutLabels
+	
+	// how to determine num possible outputs / output nodes for classification? ( 3 for iris)
+	// for classification, num unique labels in the training labels
+	// 
+	@Override
+	public void predictInstanceLabelsFromFeatures(double[] featureVector, double[] arrayInWhichToPutLabels)
+			throws Exception {
+		// TODO Auto-generated method stub
+
+	}
+
+}
