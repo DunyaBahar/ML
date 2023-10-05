@@ -6,12 +6,15 @@ import java.util.Random;
 // can't set up topology in constructor 
 public class NeuralNet extends SupervisedLearner {
 	Random random;
-	// topology here
+	
+	// activations?
 	double[] inputLayer;
-	double inputBias;
 	double[] hiddenLayer;  // only one needed, could generalize to more.
-	double hiddenBias;
 	double[] outputLayer;
+	
+	// weights
+	double inputBias;
+	double hiddenBias;
 	
 	int nNodesInputLayer = 0;
 	int nNodesHiddenLayer = 0;
@@ -27,6 +30,8 @@ public class NeuralNet extends SupervisedLearner {
 
 	// do we assume a classification task? 
 	// make it work for regression...?
+	
+	double[] prediction;  // This only ever contains 1 value. It's only an array because the toolkit expects it to be.
 
 	public NeuralNet(Random rand) {
 		this.random = rand;
@@ -57,8 +62,67 @@ public class NeuralNet extends SupervisedLearner {
 		hiddenLayer = initWeights(nNodesHiddenLayer);
 		hiddenBias = initWeights(1)[0];
 		inputLayer = initWeights(nNodesInputLayer);
+		
+		// fwd pass - call recall fn
+		// predict()
+		// get error at output nodes
+		
+		// backward pass:
+		// calculate error at hidden nodes, based on the
+		//   error of the ouput nodes which is propagated back to the hidden nodes.
+		// continue propagating error back until the input layer is reached
+		// update all weights based on the standard delta rule with the appropriate error fn d:
+		//    change in weight_ij = C * d_j * Z_i
+		//    where C is LR, and Z_i is the value of the ith node (works for any layer)
+		
+		
+		// derivative of sigmoid:
+		// f'(net_j) = Z_j * (1 - Z_j)
+		
+		boolean learning = true;  // flag for stopping criterion
+		while (learning) {
+			double[] instance;
+			double trueLabel;
+			double error;
+			double activation;
+			double gradient;
+			// thru each instance:
+			for (int i = 0; i < featuresOnlyDataMatrix.getRowCount(); i++) {
+				instance = featuresOnlyDataMatrix.getRow(i);
+				predictInstanceLabelsFromFeatures(instance, prediction);
+				
+				trueLabel = labelsOnlyDataMatrix.getRow(i)[0];
+				// error for output nodes:
+				error = LEARNING_RATE * (trueLabel - prediction[0]) * deriv(net);
+				activation = sigmoidActivation(net);
+				gradient = 1;
+			}  // end for i
+		}  // end while
+
+	}
+	
+	// converts toolkit labels to one-hot encodings, for use in training
+	private double[] oneHot(int label) {
+		double[] oneHot = new double[nNodesOutputLayer];
+		int i = 0;
+		while (i < label) {
+			oneHot[i] = 0;
+			i++;
+		}
+		oneHot[label] = 1;
+		i++;
+		while (i < oneHot.length)
+			oneHot[i] = 0;
+	}
+	
+	// will return a number between 0 and 1
+	private double sigmoidActivation(double net) {
+		// 1 / (1 + e ^ (-net_j))
+		double bottom = 1 + Math.pow(Math.E, -net);
+		return 1/bottom;
 	}
 
+	// determines the number of nodes in the input and output layers
 	private void initTopology(DataMatrix x, DataMatrix y) {
 		int nPossibleVals;
 		for (int col = 0; col < x.getColCount(); col++) {
@@ -66,15 +130,17 @@ public class NeuralNet extends SupervisedLearner {
 			nNodesInputLayer += (nPossibleVals == 0) ? 1 : nPossibleVals;      
 		}
 		nPossibleVals = y.getValueCountForAttributeAtColumn(0);
-		nNodesOutputLayer += (nPossibleVals == 0) ? 1 : nPossibleVals;      
+		nNodesOutputLayer += (nPossibleVals == 0) ? 1 : nPossibleVals;    
+		prediction = new double[nNodesOutputLayer];
 		// i.e iris - 1 output feature, 1 hot vector w 3 output nodes (100 for example for 1st class.)
 		// but will put 0 1 or 2 in the arrayInWhichToPutLabels...
 		// need the 1hot format to 
 	}
 	
+	// returns small random weights with mean 0
 	private double[] initWeights(int nInputs) {
 	    double[] weights = new double[nInputs];
-	    final double bound = 0.25;  // is this different for backprop?
+	    final double bound = 0.25;  // could do 1 / sqrt(nNodesInputLayer) from pg. 80
 	    for (int i = 0; i < weights.length; i++)
 	    	weights[i] = (random.nextDouble() * 2 * bound) - bound;
 	    return weights;
@@ -91,9 +157,18 @@ public class NeuralNet extends SupervisedLearner {
 	// for classification, num unique labels in the training labels
 	// 
 	@Override
-	public void predictInstanceLabelsFromFeatures(double[] featureVector, double[] arrayInWhichToPutLabels)
-			throws Exception {
-		// TODO Auto-generated method stub
-
+	public void predictInstanceLabelsFromFeatures(double[] featureVector, double[] arrayInWhichToPutLabels) throws Exception {
+		// fwd pass thru the network
+		// from inputs to hidden layer:
+		for (int i = 0; i < nNodesInputLayer; i++) { // iterate through the weights from each input to each hidden node:
+			double net = 0;
+			for (int j = 0; j < nNodesHiddenLayer; j++) {
+				net += 
+			}  // end j
+		}  // end i
+			net += weights[i] * featureVector[i];
+		net += bias;
+		arrayInWhichToPutLabels[0] = net > 0 ? 1 : 0;  // threshold activation function:
 	}
 }
+
