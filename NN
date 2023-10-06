@@ -7,14 +7,15 @@ import java.util.Random;
 public class NeuralNet extends SupervisedLearner {
 	Random random;
 	
-	// activations?
 	double[] inputLayer;
-	double[] hiddenLayer;  // only one needed, could generalize to more.
+	double[] hiddenLayer;
 	double[] outputLayer;
 	
 	// weights
-	double inputBias;
 	double hiddenBias;
+	double outputBias;
+	double[][] hiddenWeights;
+	double[][] outputWeights;
 	
 	int nNodesInputLayer = 0;
 	int nNodesHiddenLayer = 0;
@@ -32,7 +33,9 @@ public class NeuralNet extends SupervisedLearner {
 	// make it work for regression...?
 	
 	double[] prediction;  // This only ever contains 1 value. It's only an array because the toolkit expects it to be.
+	double net = 0;
 
+	
 	public NeuralNet(Random rand) {
 		this.random = rand;
 	}
@@ -55,18 +58,7 @@ public class NeuralNet extends SupervisedLearner {
 		DataMatrix yVal = new DataMatrix(featuresOnlyDataMatrix, nTrainRows, nFeatures, nTrainValRows - nTrainRows, 1);
 		
 		initTopology(featuresOnlyDataMatrix, labelsOnlyDataMatrix);
-		
-		// initialize weights and biases:
-		inputLayer = initWeights(nNodesInputLayer);
-		inputBias = initWeights(1)[0];
-		hiddenLayer = initWeights(nNodesHiddenLayer);
-		hiddenBias = initWeights(1)[0];
-		inputLayer = initWeights(nNodesInputLayer);
-		
-		// fwd pass - call recall fn
-		// predict()
-		// get error at output nodes
-		
+		initWeights();
 		// backward pass:
 		// calculate error at hidden nodes, based on the
 		//   error of the ouput nodes which is propagated back to the hidden nodes.
@@ -75,50 +67,65 @@ public class NeuralNet extends SupervisedLearner {
 		//    change in weight_ij = C * d_j * Z_i
 		//    where C is LR, and Z_i is the value of the ith node (works for any layer)
 		
-		
-		// derivative of sigmoid:
-		// f'(net_j) = Z_j * (1 - Z_j)
-		
 		boolean learning = true;  // flag for stopping criterion
 		while (learning) {
 			double[] instance;
 			double trueLabel;
-			double error;
-			double activation;
+			double outputActivation;
+			double hiddenActivation;
 			double gradient;
+			double[] oneHotPred;
+			double[] oneHotLabel;
+			double delta;
+			double outputError;
 			// thru each instance:
 			for (int i = 0; i < featuresOnlyDataMatrix.getRowCount(); i++) {
 				instance = featuresOnlyDataMatrix.getRow(i);
 				predictInstanceLabelsFromFeatures(instance, prediction);
-				
-				trueLabel = labelsOnlyDataMatrix.getRow(i)[0];
-				// error for output nodes:
-				error = LEARNING_RATE * (trueLabel - prediction[0]) * deriv(net);
-				activation = sigmoidActivation(net);
-				gradient = 1;
+				oneHotPred = oneHot(prediction[i]);
+				oneHotLabel = oneHot(labelsOnlyDataMatrix.getRow(i)[0]);
+				// thru each output node:
+				for (int j = 0; j < nNodesOutputLayer; j++) {
+					outputError = (oneHotLabel[j] - oneHotPred[0]) * gradient(net);
+					delta = LEARNING_RATE * sigmoidActivation(net) * outputError;
+					outputWeights[i][j] += delta;
+					// thru each hidden node:
+					for (int h = 0; h < N_HIDDEN_NODES; h++) {
+						
+					}  // end for h
+				}  // end for j
 			}  // end for i
 		}  // end while
-
+	}
+	
+	// calculates the derivative of sigmoid of the net
+	// f'(net_j) = Z_j * (1 - Z_j)
+	public double gradient(double net_j) {
+		double O_j = sigmoidActivation(net_j);
+		return O_j * (1 - O_j);
 	}
 	
 	// converts toolkit labels to one-hot encodings, for use in training
-	private double[] oneHot(int label) {
+	private double[] oneHot(double label) {
 		double[] oneHot = new double[nNodesOutputLayer];
 		int i = 0;
 		while (i < label) {
 			oneHot[i] = 0;
 			i++;
 		}
-		oneHot[label] = 1;
+		oneHot[(int)label] = 1;
 		i++;
-		while (i < oneHot.length)
+		while (i < oneHot.length) {
 			oneHot[i] = 0;
+			i++;
+		}
+		return oneHot;
 	}
 	
 	// will return a number between 0 and 1
-	private double sigmoidActivation(double net) {
+	private double sigmoidActivation(double net_j) {
 		// 1 / (1 + e ^ (-net_j))
-		double bottom = 1 + Math.pow(Math.E, -net);
+		double bottom = 1 + Math.pow(Math.E, -net_j);
 		return 1/bottom;
 	}
 
@@ -138,12 +145,16 @@ public class NeuralNet extends SupervisedLearner {
 	}
 	
 	// returns small random weights with mean 0
-	private double[] initWeights(int nInputs) {
-	    double[] weights = new double[nInputs];
+	private void initWeights() {
 	    final double bound = 0.25;  // could do 1 / sqrt(nNodesInputLayer) from pg. 80
-	    for (int i = 0; i < weights.length; i++)
-	    	weights[i] = (random.nextDouble() * 2 * bound) - bound;
-	    return weights;
+	    for (int i = 0; i < nNodesHiddenLayer; i++)
+	    	for (int j = 0; j < nNodesOutputLayer; j++)
+	    		outputWeights[i][j] = (random.nextDouble() * 2 * bound) - bound;
+	    for (int i = 0; i < nNodesInputLayer; i++)
+	    	for (int j = 0; j < nNodesHiddenLayer; j++)
+	    		hiddenWeights[i][j] = (random.nextDouble() * 2 * bound) - bound;
+	    hiddenBias = (random.nextDouble() * 2 * bound) - bound;
+	    outputBias = (random.nextDouble() * 2 * bound) - bound;
 	}
 
 	// arrayToPutLabels is 1 column. put prediction for one instance at that row. 
@@ -163,12 +174,16 @@ public class NeuralNet extends SupervisedLearner {
 		for (int i = 0; i < nNodesInputLayer; i++) { // iterate through the weights from each input to each hidden node:
 			double net = 0;
 			for (int j = 0; j < nNodesHiddenLayer; j++) {
-				net += 
+				net += 6;
 			}  // end j
 		}  // end i
 			net += weights[i] * featureVector[i];
 		net += bias;
+		this.net = net;
 		arrayInWhichToPutLabels[0] = net > 0 ? 1 : 0;  // threshold activation function:
 	}
 }
+
+
+
 
