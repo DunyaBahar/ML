@@ -32,8 +32,7 @@ public class NeuralNet extends SupervisedLearner {
 	// do we assume a classification task? 
 	// make it work for regression...?
 	
-	double[] prediction;  // This only ever contains 1 value. It's only an array because the toolkit expects it to be.
-	double net = 0;
+	double[] prediction = new double[1];  // This only ever contains 1 value. It's only an array because the toolkit expects it to be.
 
 	
 	public NeuralNet(Random rand) {
@@ -81,19 +80,21 @@ public class NeuralNet extends SupervisedLearner {
 			// thru each instance:
 			for (int i = 0; i < featuresOnlyDataMatrix.getRowCount(); i++) {
 				instance = featuresOnlyDataMatrix.getRow(i);
-				predictInstanceLabelsFromFeatures(instance, prediction);
-				oneHotPred = oneHot(prediction[i]);
+				predictInstanceLabelsFromFeatures(instance, prediction);  // fwd pass
+				oneHotPred = oneHot(prediction[0]);
 				oneHotLabel = oneHot(labelsOnlyDataMatrix.getRow(i)[0]);
-				// thru each output node:
+				// calculate error per output node:
 				for (int j = 0; j < nNodesOutputLayer; j++) {
 					outputError = (oneHotLabel[j] - oneHotPred[0]) * gradient(net);
 					delta = LEARNING_RATE * sigmoidActivation(net) * outputError;
 					outputWeights[i][j] += delta;
-					// thru each hidden node:
+					// calculate error per hidden node:
 					for (int h = 0; h < N_HIDDEN_NODES; h++) {
 						
 					}  // end for h
 				}  // end for j
+				// this training instance is done
+				updateWeights();  // online stochastic weight updates, after each training instance
 			}  // end for i
 		}  // end while
 	}
@@ -139,9 +140,6 @@ public class NeuralNet extends SupervisedLearner {
 		nPossibleVals = y.getValueCountForAttributeAtColumn(0);
 		nNodesOutputLayer += (nPossibleVals == 0) ? 1 : nPossibleVals;    
 		prediction = new double[nNodesOutputLayer];
-		// i.e iris - 1 output feature, 1 hot vector w 3 output nodes (100 for example for 1st class.)
-		// but will put 0 1 or 2 in the arrayInWhichToPutLabels...
-		// need the 1hot format to 
 	}
 	
 	// returns small random weights with mean 0
@@ -157,31 +155,30 @@ public class NeuralNet extends SupervisedLearner {
 	    outputBias = (random.nextDouble() * 2 * bound) - bound;
 	}
 
-	// arrayToPutLabels is 1 column. put prediction for one instance at that row. 
-	// for classification, put in an integer that corresponds to the class
-	// (0, 1, 2 for example)
-	// BUT in model we should have as many output nodes we'd need based on the data
-	// then we'd interpret / translate that (which has the highest net, for example
-	// the translated version 001 would go into arrayToPutLabels
-	
-	// how to determine num possible outputs / output nodes for classification? ( 3 for iris)
-	// for classification, num unique labels in the training labels
-	// 
 	@Override
 	public void predictInstanceLabelsFromFeatures(double[] featureVector, double[] arrayInWhichToPutLabels) throws Exception {
-		// fwd pass thru the network
-		// from inputs to hidden layer:
-		for (int i = 0; i < nNodesInputLayer; i++) { // iterate through the weights from each input to each hidden node:
-			double net = 0;
-			for (int j = 0; j < nNodesHiddenLayer; j++) {
-				net += 6;
-			}  // end j
+		double[] hiddenNets = new double[N_HIDDEN_NODES];
+		double[] hiddenOutputs = new double[N_HIDDEN_NODES];
+		for (int i = 0; i < nNodesHiddenLayer; i++) {  // for each hidden node
+			hiddenNets[i] = 0;
+			// summation of (w_i * x_i) over i inputs:
+			for (int j = 0; j < nNodesHiddenLayer; j++)  // for each input (weight from the hth input to this jth hidden node)
+				hiddenNets[i] += hiddenWeights[j][i] * featureVector[i];
+			hiddenNets[i] += hiddenBias;
+			hiddenOutputs[i] = sigmoidActivation(hiddenNets[i]);
 		}  // end i
-			net += weights[i] * featureVector[i];
-		net += bias;
-		this.net = net;
-		arrayInWhichToPutLabels[0] = net > 0 ? 1 : 0;  // threshold activation function:
+		double[] outputNets = new double[nNodesOutputLayer];
+		for (int i = 0; i < nNodesOutputLayer; i++) {  // for each output node
+			outputNets[i] = outputBias;
+			for (int j = 0; j < nNodesHiddenLayer; j++)  // for each hidden node output
+				outputNets[i] += hiddenOutputs[j];
+		}  // end i
+		prediction[0] = outputNets[0];
+		for(int i = 0; i < nNodesOutputLayer; i++)  // prediction is highest-net output
+			if (outputNets[i] > prediction[0])
+				prediction[0] = i;
 	}
+	
 }
 
 
